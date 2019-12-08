@@ -24,7 +24,6 @@ class TranEngine(object):
             'train_dataset': train_dataset,
             'val_dataset': val_dataset,
             'loss_func': loss_func,
-            'train_data': None,
             'total_steps': 1,
             'current_epoch': 0,
             'epochs': epochs,
@@ -37,8 +36,6 @@ class TranEngine(object):
 
         for epoch in range(state['epochs']):
             for _ in tqdm(range(state['step_per_epoch'])):
-                img1, img2, label = next(train_dataset)
-                state['train_data'] = (img1, img2, label)
                 self.hooks['train_step'](state)
                 # self.hooks['end_step'](state)
                 state['total_steps'] += 1

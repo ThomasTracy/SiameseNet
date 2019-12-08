@@ -41,7 +41,7 @@ class SiameseNet(Model):
         ])
         # print(self.encoder.weights)
 
-    def loss(self, margin, gt_labels, output1, output2, size_average=True):
+    def loss(self, gt_labels, output1, output2):
         '''
         Samples same --> label=1, sample different --> label=0
         :param margin:
@@ -77,7 +77,7 @@ class SiameseNet(Model):
         output2 = all_output[batch_size:]
 
         #define the loss
-        loss, labels_predict = self.loss(margin=1.25,
+        loss, labels_predict = self.loss(
                          gt_labels=gt_labels,
                          output1=output1,
                          output2=output2)

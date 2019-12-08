@@ -54,7 +54,7 @@ def train(config):
     # Initialize data loader
     data_dir = config['dataset_path']
     train_dataset = DataSet(mode='train')
-    val_dataset = DataSet(mode='val')
+    val_dataset = DataSet(mode='train', batch_size=config['eval_batch_size'])
 
     train_engine = TrainEngine.TranEngine()
 
@@ -62,7 +62,7 @@ def train(config):
     model = SiameseNet.SiameseNet()
     # TODO: add restore functions
 
-    optimizer = tf.keras.optimizers.RMSprop(config['learning_rate'])
+    optimizer = tf.keras.optimizers.Adagrad(learning_rate=config['learning_rate'])
 
     # Metrics to gather results
     train_loss = tf.metrics.Mean(name='train_loss')
@@ -79,7 +79,7 @@ def train(config):
 
     # Forward and upgrade gradients
     def train_step(state):
-        img1, img2, labels = state['train_data']
+        img1, img2, labels = next(state['train_dataset'])
         with tf.GradientTape() as tape:
             loss, label_predict, acc = model(img1, img2, labels)
 
@@ -95,8 +95,12 @@ def train(config):
         # if state['total_steps'] % 100 ==0:
         #     logging.info(f"Step: {state['total_steps']} | Loss: {loss.numpy()} | Loss-avg: {train_loss.result().numpy()}")
 
-    def val_step(img1, img2, labels):
+    def val_step(state):
+        img1, img2, labels = next(state['val_dataset'])
+        # print(type(img1))
         loss,_ , acc = model(img1, img2, labels)
+        loss = tf.reduce_mean(loss)
+        acc = tf.reduce_mean(acc)
         val_loss(loss)
         val_acc(acc)
 
@@ -110,6 +114,8 @@ def train(config):
 
     def end_epoch(state):
         epoch = state['current_epoch'] + 1
+
+        val_step(state)
 
         logging.info(f"\033[1;32m************** End Epoch {epoch} **************\033[0m")
         template = 'Epoch {} | Loss: {:.6f} | Accuracy: {:.3%} | ' \
@@ -136,11 +142,6 @@ def train(config):
         val_loss.reset_states()
         val_acc.reset_states()
 
-
-    def start_step(state):
-        img1, img2, labels = state['train_data']
-        if state['total_steps']%100 == 0:
-            logging.info(f'Trainning step')
 
     train_engine.hooks['start'] = start
     train_engine.hooks['end'] = end

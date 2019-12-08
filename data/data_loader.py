@@ -20,7 +20,6 @@ class DataSet:
         self.height = IMAGE_HEIGHT
         self.dataset_dir = os.path.join(DATASET_DIR, mode)
         self.classes = os.listdir(self.dataset_dir)
-        self.probe = [1,2,3,4,5]
 
 
     def __next__(self):
