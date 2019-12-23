@@ -13,12 +13,12 @@ DATASET_DIR = '/home/tracy/data/TrafficSign_single/Images'
 
 
 class DataSet:
-    def __init__(self, batch_size=1, mode='train'):
+    def __init__(self, batch_size=1, mode='train', dataset_dir=DATASET_DIR):
         self.mode = mode
         self.batch_size = batch_size
         self.width = IMAGE_WIDTH
         self.height = IMAGE_HEIGHT
-        self.dataset_dir = os.path.join(DATASET_DIR, mode)
+        self.dataset_dir = os.path.join(dataset_dir, mode)
         self.classes = os.listdir(self.dataset_dir)
 
 
@@ -60,34 +60,50 @@ class DataSet:
         :return:
         img1    [batch, width, height, 3]
         img2    [batch, width, height, 3]
-        labe    [batch, ]
+        label    [batch, ]
         """
         img1 = []
         img2 = []
         labels = []
 
-        if self.mode == 'train':
-
+        if self.mode == 'train' or self.mode == 'val':
             for i in range(self.batch_size):
                 label = np.random.randint(0, 2)
                 if label == 0:          # Different class
-                    negative_pair = self.pair_generate(np.random.choice(self.classes, 2, replace=False))
+                    negative_pair = self.pair_generate(np.random.choice(self.classes, 2, replace=False))    # replace=False, chosen pair cant be same
                     img1.append(tf.expand_dims(negative_pair[0], axis=0))
                     img2.append(tf.expand_dims(negative_pair[1], axis=0))
                     labels.append(tf.expand_dims(label, axis=0))
                 else:                   # Same classes
-                    positive_pair = self.pair_generate([np.random.choice(self.classes)] * 2)
-                    img1.append(tf.expand_dims(positive_pair[0], axis=0))
-                    img2.append(tf.expand_dims(positive_pair[1], axis=0))
+                    test_pair = self.pair_generate([np.random.choice(self.classes)] * 2)
+                    img1.append(tf.expand_dims(test_pair[0], axis=0))
+                    img2.append(tf.expand_dims(test_pair[1], axis=0))
                     labels.append(tf.expand_dims(label, axis=0))
 
             img1 = tf.concat(img1, axis=0)          # [batch, width, height, channel]
             img2 = tf.concat(img2, axis=0)
             labels = tf.concat(labels, axis=0)      # [batch, label]
 
-        elif self.mode == 'val':
-            pass
-        return img1, img2, labels
+            return img1, img2, labels
+
+        elif self.mode == 'test':
+
+            for i in range(self.batch_size):
+                label = np.random.randint(0, 2)
+                if label == 0:
+                    test_pair = self.pair_generate(np.random.choice(self.classes, 2, replace=False))     # Replace=True, chosen pari can be same
+                    img1.append(tf.expand_dims(test_pair[0], axis=0))
+                    img2.append(tf.expand_dims(test_pair[1], axis=0))
+                else:
+                    test_pair = self.pair_generate([np.random.choice(self.classes)] * 2)
+                    img1.append(tf.expand_dims(test_pair[0], axis=0))
+                    img2.append(tf.expand_dims(test_pair[1], axis=0))
+
+            img1 = tf.concat(img1, axis=0)
+            img2 = tf.concat(img2, axis=0)
+
+            return img1, img2
+
 
 
     def test(self):

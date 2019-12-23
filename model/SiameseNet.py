@@ -41,13 +41,27 @@ class SiameseNet(Model):
         ])
         # print(self.encoder.weights)
 
+    def prediction(self, input1, input2):
+        batch_size = input1.shape[0]
+        # fusion 2 inpusts into 1 and then encode
+        all_input = tf.concat([input1, input2], 0)
+        all_output = self.encoder(all_input)
+
+        # split the output
+        output1 = all_output[:batch_size]
+        output2 = all_output[batch_size:]
+        distance = tf.pow((output2 - output1), 2)  # Squared distance
+        score = self.dense(distance)
+        labels_predict = tf.argmax(tf.nn.softmax(score), -1)
+
+        return labels_predict
+
     def loss(self, gt_labels, output1, output2):
         '''
         Samples same --> label=1, sample different --> label=0
         :param margin:
         :return:
         '''
-        eps = 1e-9
         distance = tf.pow((output2 - output1), 2)      #Squared distance
         score = self.dense(distance)
         # print('score: ', score)
@@ -89,9 +103,17 @@ class SiameseNet(Model):
         return loss, labels_predict, acc
 
 
-    def save(self, save_dir, model):
-        if not os.path.exists(save_dir):
-            os.makedirs(save_dir)
-        checkpoint_prefix = os.path.join(save_dir, 'ckpt')
-        checkpoint = tf.train.Checkpoint(model=model)
-        checkpoint.save(checkpoint_prefix)
+    # def save(self, save_dir, model):
+    #     checkpoint = tf.train.Checkpoint(model=model)
+    #     checkpoint.save(file_prefix=checkpoint_prefix)
+    #     if not os.path.exists(save_dir):
+    #         os.makedirs(save_dir)
+    #     checkpoint_prefix = os.path.join(save_dir, 'model.ckpt')
+
+
+    def load(self, load_dir, model):
+        if not os.path.exists(load_dir):
+            raise ValueError('Checkpoint file does not exist')
+        latest = tf.train.latest_checkpoint(load_dir)
+        checkppoint = tf.train.Checkpoint(model=model)
+        checkppoint.restore(latest).assert_consumed()

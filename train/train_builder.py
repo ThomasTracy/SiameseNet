@@ -54,7 +54,7 @@ def train(config):
     # Initialize data loader
     data_dir = config['dataset_path']
     train_dataset = DataSet(mode='train')
-    val_dataset = DataSet(mode='train', batch_size=config['eval_batch_size'])
+    val_dataset = DataSet(mode='val', batch_size=config['eval_batch_size'])
 
     train_engine = TrainEngine.TranEngine()
 
@@ -129,7 +129,8 @@ def train(config):
             logging.info("\033[1;32m************** Saving the best model with loss: "
                          "{:.6f} **************\033[0m".format(current_loss))
             state['best_val_loss'] = current_loss
-            model.save(save_dir=config['model_dir'], model=model)
+            # model.save(save_dir=config['model_dir'], model=model)
+            model.save_weights(os.path.join(config['model_dir'], 'my_model'))
 
         #TODO: Early stopping
         with train_summary_writer.as_default():

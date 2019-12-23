@@ -132,7 +132,8 @@ if __name__ == '__main__':
     # print(tf.tile(tf.range(0, 2, dtype=tf.float32), [0]))
     # print(1//4)
     template = 'a: {:.6f}, accuracy: {:.3%},'
-    print(template.format(1, 0.578857714))
+    a = 'haha'
+    b = 'hehe'
 
 
 
