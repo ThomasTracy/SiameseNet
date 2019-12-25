@@ -30,7 +30,7 @@ model = SiameseNet()
 # model.load_weights(latest)
 # model.load('/home/tracy/PycharmProjects/SiameseNet/checkpoint/', model)
 
-model.load_weights('/home/tracy/PycharmProjects/SiameseNet/checkpoint/my_model')
+model.load_weights('/home/tracy/PycharmProjects/SiameseNet/checkpoint/best_checkpoint/my_model')
 
 test_dataset = DataSet(mode='test', batch_size=10)
 

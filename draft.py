@@ -131,9 +131,19 @@ if __name__ == '__main__':
     # print(numpy.random.choice(b, 6, replace=False))
     # print(tf.tile(tf.range(0, 2, dtype=tf.float32), [0]))
     # print(1//4)
-    template = 'a: {:.6f}, accuracy: {:.3%},'
-    a = 'haha'
-    b = 'hehe'
+    x = tf.constant([0.7, 0.7])
+    y = tf.constant([1., 0.])
+    z = tf.nn.sigmoid_cross_entropy_with_logits(labels=y, logits=x)
+    w = -1 * numpy.log(1/(1 + numpy.exp(-0.7)))
+    a = tf.constant([0,1,2,3])
+    b = tf.constant([[1], [2], [3]])
+    b = tf.squeeze(b)
+    print(numpy.exp(-0.7))
+
+    print(z)
+    print(w)
+    print(tf.cast(a>0, tf.float32))
+    print(b.get_shape())
 
 
 

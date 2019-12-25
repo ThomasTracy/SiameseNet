@@ -53,16 +53,23 @@ def train(config):
 
     # Initialize data loader
     data_dir = config['dataset_path']
-    train_dataset = DataSet(mode='train')
+    train_dataset = DataSet(mode='train', batch_size=config['train_batch_size'])
     val_dataset = DataSet(mode='val', batch_size=config['eval_batch_size'])
 
     train_engine = TrainEngine.TranEngine()
 
     # Training options
+    # Build model and load pretrained weights
     model = SiameseNet.SiameseNet()
-    # TODO: add restore functions
+    if config['checkpoint'] is not None:
+        model.load_weights(config['checkpoint'])
 
-    optimizer = tf.keras.optimizers.Adagrad(learning_rate=config['learning_rate'])
+    lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
+        initial_learning_rate=config['learning_rate'],
+        decay_steps=5000,
+        decay_rate=0.9,
+    )
+    optimizer = tf.keras.optimizers.Adagrad(learning_rate=lr_schedule)
 
     # Metrics to gather results
     train_loss = tf.metrics.Mean(name='train_loss')
@@ -130,7 +137,7 @@ def train(config):
                          "{:.6f} **************\033[0m".format(current_loss))
             state['best_val_loss'] = current_loss
             # model.save(save_dir=config['model_dir'], model=model)
-            model.save_weights(os.path.join(config['model_dir'], 'my_model'))
+            model.save_weights(os.path.join(config['model_dir'], 'my_model'), overwrite=True)
 
         #TODO: Early stopping
         with train_summary_writer.as_default():

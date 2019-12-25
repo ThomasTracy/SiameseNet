@@ -38,7 +38,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--config', type=str, default='traffic_signs.conf', help='Path to config file')
     parser.add_argument('--model_dir', type=str,
-                        default='/home/tracy/PycharmProjects/SiameseNet/checkpoint/', help='Path to save models')
+                        default='/home/tracy/PycharmProjects/SiameseNet/checkpoint/sigmoid_loss', help='Path to save models')
+    parser.add_argument('--checkpoint', type=str,
+                        default='/home/tracy/PycharmProjects/SiameseNet/checkpoint/sigmoid_loss/best/my_model', help='Path of pretrained models')
     parser.add_argument('--train_log_dir', type=str,
                         default='/home/tracy/PycharmProjects/SiameseNet/logs', help='Path to save logging files')
     parser.add_argument('--dataset_path', type=str,
@@ -47,10 +49,10 @@ if __name__ == '__main__':
                         default='/home/tracy/PycharmProjects/SiameseNet/tensorboard', help='Path to tensorboard files')
 
     parser.add_argument('--learning_rate', type=float, default=0.001, help='Path to config file')
-    parser.add_argument('--train_batch_size', type=int, default=1, help='Training batch size')
-    parser.add_argument('--eval_batch_size', type=int, default=32, help='Evaluate batch size')
+    parser.add_argument('--train_batch_size', type=int, default=32, help='Training batch size')
+    parser.add_argument('--eval_batch_size', type=int, default=64, help='Evaluate batch size')
     parser.add_argument('--epochs', type=int, default=1000000, help='Training epochs')
-    parser.add_argument('--step_per_epoch', type=int, default=100, help='Total running steps per epoch')
+    parser.add_argument('--step_per_epoch', type=int, default=200, help='Total running steps per epoch')
 
     configs = vars(parser.parse_args())
     pprint.pprint(configs)

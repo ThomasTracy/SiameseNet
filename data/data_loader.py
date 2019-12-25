@@ -9,11 +9,11 @@ import matplotlib.pyplot as plt
 IMAGE_WIDTH = 64
 IMAGE_HEIGHT = 64
 AUTOTUNE = tf.data.experimental.AUTOTUNE
-DATASET_DIR = '/home/tracy/data/TrafficSign_single/Images'
+DATASET_DIR = '/home/tracy/data/TrafficSign_single'
 
 
 class DataSet:
-    def __init__(self, batch_size=1, mode='train', dataset_dir=DATASET_DIR):
+    def __init__(self, batch_size, mode, dataset_dir=DATASET_DIR):
         self.mode = mode
         self.batch_size = batch_size
         self.width = IMAGE_WIDTH
@@ -32,6 +32,8 @@ class DataSet:
         # Turn image in 64x64x3   0 -- 1.0
         img = tf.image.decode_jpeg(img, channels=3)
         img = tf.image.convert_image_dtype(img, tf.float32)
+        img = tf.image.rgb_to_grayscale(img)
+        # img = tf.image.per_image_standardization(img)
         return tf.image.resize(img, [self.width, self.height])
 
 
@@ -68,28 +70,28 @@ class DataSet:
 
         if self.mode == 'train' or self.mode == 'val':
             for i in range(self.batch_size):
-                label = np.random.randint(0, 2)
-                if label == 0:          # Different class
+                label = np.random.randint(0, 5)
+                if label != 0:          # Different class, 3/4 are different
                     negative_pair = self.pair_generate(np.random.choice(self.classes, 2, replace=False))    # replace=False, chosen pair cant be same
                     img1.append(tf.expand_dims(negative_pair[0], axis=0))
                     img2.append(tf.expand_dims(negative_pair[1], axis=0))
-                    labels.append(tf.expand_dims(label, axis=0))
-                else:                   # Same classes
+                    labels.append(tf.expand_dims(0., axis=0))        # label: [batch, 0]
+                else:                   # Same classes, 1/4 are the same
                     test_pair = self.pair_generate([np.random.choice(self.classes)] * 2)
                     img1.append(tf.expand_dims(test_pair[0], axis=0))
                     img2.append(tf.expand_dims(test_pair[1], axis=0))
-                    labels.append(tf.expand_dims(label, axis=0))
+                    labels.append(tf.expand_dims(1., axis=0))        # label: [batch, 1]
 
             img1 = tf.concat(img1, axis=0)          # [batch, width, height, channel]
             img2 = tf.concat(img2, axis=0)
-            labels = tf.concat(labels, axis=0)      # [batch, label]
+            labels = tf.concat(labels, axis=0)      # [batch, 0/1]
 
             return img1, img2, labels
 
         elif self.mode == 'test':
 
             for i in range(self.batch_size):
-                label = np.random.randint(0, 2)
+                label = np.random.randint(0, 4)
                 if label == 0:
                     test_pair = self.pair_generate(np.random.choice(self.classes, 2, replace=False))     # Replace=True, chosen pari can be same
                     img1.append(tf.expand_dims(test_pair[0], axis=0))
@@ -180,10 +182,34 @@ def show_result(img1, img2, labels):
 # show_result(img1, img2, labels)
 
 # get_len_dataset()
+def show_result(img1, img2, label):
+    num = img1.get_shape()[0]
+    print(num)
+
+    for i in range(num):
+        ax1 = plt.subplot(5,4,2*i + 1)
+        ax1.imshow(np.squeeze(img1[i].numpy()))
+        ax1.set_xticks([])
+        ax1.set_yticks([])
+        ax1.set_title(label[i].numpy())
+
+        ax2 = plt.subplot(5,4,2*i+2)
+        ax1.set_title(label[i].numpy())
+        ax2.imshow(np.squeeze(img2[i].numpy()))
+        ax2.set_xticks([])
+        ax2.set_yticks([])
+
+    plt.show()
+
 if __name__ == '__main__':
-    with tf.device('/GPU:0'):
-        print('No Problem')
-        print(tf.executing_eagerly())
-        dataset = DataSet()
-        img1, img2, labels = next(dataset)
-        print(img1.numpy())
+    print('No Problem')
+    print(tf.executing_eagerly())
+    dataset = DataSet(mode='train', batch_size=10)
+    img1, img2, labels = next(dataset)
+    show_result(img1, img2, labels)
+    # img = dataset.load_img('/home/tracy/data/TrafficSign_single/Images/train/00005/00046_00027.jpg')
+    # img = np.squeeze(img)
+    # print(img)
+    # plt.figure()
+    # plt.imshow(img, cmap='gray')
+    # plt.show()
